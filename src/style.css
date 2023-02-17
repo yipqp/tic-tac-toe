@@ -1,0 +1,68 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  display: flex;
+  min-height: 100vh;
+  justify-content: center;
+  align-items: center;
+  font-family: "Poppins", sans-serif;
+}
+
+.gameboard {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  font-size: 2rem;
+}
+
+.gameboard-square {
+  display: flex;
+  width: 100px;
+  aspect-ratio: 1 / 1;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.right-line::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 4px;
+  background-color: gray;
+}
+
+.left-line::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 4px;
+  background-color: gray;
+}
+
+.top-line::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4px;
+  background-color: gray;
+}
+
+.bottom-line::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 4px;
+  background-color: gray;
+}
