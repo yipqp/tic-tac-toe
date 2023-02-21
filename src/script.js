@@ -59,7 +59,7 @@ const Gameboard = (function () {
       }
       if (tempSymbol === winningSymbol) return symbolToPlayer(winningSymbol);
     }
-    // diag left-right win
+    // diag top left - bottom right win
     for (let i = 0; i < 1; i++) {
       const winningSymbol = board[0][0];
       let tempSymbol = winningSymbol;
@@ -71,9 +71,9 @@ const Gameboard = (function () {
       }
       if (tempSymbol === winningSymbol) return symbolToPlayer(winningSymbol);
     }
-    // diag right-left win
+    // diag top right - bottom left win
     for (let i = 0; i < 1; i++) {
-      const winningSymbol = board[2][0];
+      const winningSymbol = board[0][2];
       let tempSymbol = winningSymbol;
       for (let j = 1; j >= 0; j--) {
         if (board[2 - j][j] !== winningSymbol) {
