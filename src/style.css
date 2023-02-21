@@ -1,3 +1,9 @@
+:root {
+  --white: #f8fafc;
+  --black: #0f172a;
+  --gray: #94a3b8;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -10,21 +16,36 @@ body {
   justify-content: center;
   align-items: center;
   font-family: "Poppins", sans-serif;
+  background: var(--white);
+  color: var(--black);
+}
+
+button {
+  cursor: pointer;
 }
 
 .gameboard {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  font-size: 2rem;
+  font-size: 3rem;
 }
 
 .gameboard-square {
   display: flex;
-  width: 100px;
+  border: none;
+  width: 125px;
   aspect-ratio: 1 / 1;
   align-items: center;
   justify-content: center;
   position: relative;
+  transition: 0.2s ease-in-out;
+  background: var(--white);
+  font-size: inherit;
+  font-family: inherit;
+}
+
+.gameboard-square:hover {
+  filter: brightness(95%);
 }
 
 .right-line::before {
@@ -33,8 +54,8 @@ body {
   top: 0;
   bottom: 0;
   right: 0;
-  width: 4px;
-  background-color: gray;
+  width: 5px;
+  background-color: var(--gray);
 }
 
 .left-line::before {
@@ -43,8 +64,8 @@ body {
   top: 0;
   bottom: 0;
   left: 0;
-  width: 4px;
-  background-color: gray;
+  width: 5px;
+  background-color: var(--gray);
 }
 
 .top-line::after {
@@ -53,8 +74,8 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 4px;
-  background-color: gray;
+  height: 5px;
+  background-color: var(--gray);
 }
 
 .bottom-line::after {
@@ -63,6 +84,51 @@ body {
   left: 0;
   right: 0;
   top: 0;
-  height: 4px;
-  background-color: gray;
+  height: 5px;
+  background-color: var(--gray);
+}
+
+.end-banner {
+  display: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  padding: 50px;
+  font-size: 3rem;
+  gap: 30px;
+  z-index: 2;
+}
+
+.blur-container {
+  display: none;
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.blur {
+  backdrop-filter: blur(4px);
+}
+
+.restart-button {
+  background: none;
+  font-size: 2rem;
+  font-family: inherit;
+  border: 4px solid var(--gray);
+  padding: 10px 40px;
+  border-radius: 25px;
+  transition: 0.1s ease-out;
+}
+
+.restart-button:hover {
+  transform: scale(110%);
+  background-color: var(--gray);
+  color: var(--white);
+  filter: opacity(70%);
 }

@@ -1,12 +1,13 @@
-const Player = (symbol) => {
+const Player = (symbol, name) => {
   const getSymbol = () => symbol;
-  return { getSymbol };
+  const getName = () => name;
+  return { getSymbol, getName };
 };
 
 const Gameboard = (function () {
   const board = [];
-  const player1 = Player("x");
-  const player2 = Player("o");
+  const player1 = Player("x", "Player 1");
+  const player2 = Player("o", "Player 2");
   let currentPlayer = player1;
 
   const resetBoard = () => {
@@ -101,7 +102,7 @@ const Gameboard = (function () {
     return true;
   };
 
-  const getTurn = () => currentPlayer.getSymbol();
+  const getCurrentPlayer = () => currentPlayer;
 
   const switchTurn = () => {
     currentPlayer = currentPlayer === player1 ? player2 : player1;
@@ -115,7 +116,7 @@ const Gameboard = (function () {
     checkWin,
     checkDraw,
     makeMove,
-    getTurn,
+    getCurrentPlayer,
     switchTurn,
     getPlayer1,
     getPlayer2,
@@ -124,6 +125,11 @@ const Gameboard = (function () {
 })();
 
 const DisplayController = (function () {
+  const blurContainer = document.querySelector(".blur-container");
+  const endBanner = document.querySelector(".end-banner");
+  const endMessage = document.querySelector(".end-message");
+  const restartButton = document.querySelector(".restart-button");
+
   const updateDisplay = () => {
     const board = Gameboard.getBoard();
     for (let r = 0; r < board.length; r++) {
@@ -137,6 +143,16 @@ const DisplayController = (function () {
     }
   };
 
+  const displayEndBanner = () => {
+    blurContainer.style.display = "block";
+    endBanner.style.display = "flex";
+  };
+
+  const hideEndBanner = () => {
+    blurContainer.style.display = "none";
+    endBanner.style.display = "none";
+  };
+
   const squares = document.querySelectorAll(".gameboard-square");
   squares.forEach((square) => {
     square.addEventListener("click", (e) => {
@@ -144,25 +160,31 @@ const DisplayController = (function () {
         dataset: { row, col },
       } = e.target;
 
-      if (!Gameboard.makeMove(Gameboard.getTurn(), row, col)) return;
+      if (
+        !Gameboard.makeMove(Gameboard.getCurrentPlayer().getSymbol(), row, col)
+      )
+        return;
 
       updateDisplay();
 
       const winner = Gameboard.checkWin();
 
       if (winner) {
-        // do something
-        console.log(`${winner.getSymbol()} won!`);
-        Gameboard.resetBoard();
-        updateDisplay();
+        endMessage.textContent = `${winner.getName()} won!`;
+        displayEndBanner();
       } else if (Gameboard.checkDraw()) {
-        console.log(`No one won.`);
-        Gameboard.resetBoard();
-        updateDisplay();
+        endMessage.textContent = `No one won`;
+        displayEndBanner();
       }
 
       Gameboard.switchTurn();
     });
+  });
+
+  restartButton.addEventListener("click", () => {
+    Gameboard.resetBoard();
+    updateDisplay();
+    hideEndBanner();
   });
 
   return { updateDisplay };
