@@ -1,3 +1,8 @@
+const Player = (symbol) => {
+  const getSymbol = () => symbol;
+  return { getSymbol };
+};
+
 const Gameboard = (function () {
   let board = [];
 
@@ -63,5 +68,29 @@ const Gameboard = (function () {
     return false;
   };
 
-  return { getBoard, checkWin };
+  const makeMove = (symbol, row, col) => {
+    if (board[row][col] !== 0) return false;
+    board[row][col] = symbol;
+    return true;
+  };
+
+  return { getBoard, checkWin, makeMove };
+})();
+
+const DisplayController = (function () {
+  const updateBoard = () => {
+    const board = Gameboard.getBoard();
+    for (let r = 0; r < board.length; r++) {
+      for (let c = 0; c < board[r].length; c++) {
+        if (board[r][c] !== 0) {
+          const boardSquare = document.querySelector(
+            `[data-row="${r}"][data-col="${c}"]`
+          );
+          boardSquare.textContent = board[r][c];
+        }
+      }
+    }
+  };
+
+  return { updateBoard };
 })();
