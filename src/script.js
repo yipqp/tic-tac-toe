@@ -45,7 +45,8 @@ const Gameboard = (function () {
           break;
         }
       }
-      if (tempSymbol === winningSymbol) return symbolToPlayer(winningSymbol);
+      if (tempSymbol === winningSymbol && winningSymbol !== 0)
+        return symbolToPlayer(winningSymbol);
     }
 
     // col win
@@ -58,7 +59,8 @@ const Gameboard = (function () {
           break;
         }
       }
-      if (tempSymbol === winningSymbol) return symbolToPlayer(winningSymbol);
+      if (tempSymbol === winningSymbol && winningSymbol !== 0)
+        return symbolToPlayer(winningSymbol);
     }
     // diag top left - bottom right win
     for (let i = 0; i < 1; i++) {
@@ -70,7 +72,8 @@ const Gameboard = (function () {
           break;
         }
       }
-      if (tempSymbol === winningSymbol) return symbolToPlayer(winningSymbol);
+      if (tempSymbol === winningSymbol && winningSymbol !== 0)
+        return symbolToPlayer(winningSymbol);
     }
     // diag top right - bottom left win
     for (let i = 0; i < 1; i++) {
@@ -82,7 +85,8 @@ const Gameboard = (function () {
           break;
         }
       }
-      if (tempSymbol === winningSymbol) return symbolToPlayer(winningSymbol);
+      if (tempSymbol === winningSymbol && winningSymbol !== 0)
+        return symbolToPlayer(winningSymbol);
     }
     return false;
   };
@@ -129,6 +133,10 @@ const DisplayController = (function () {
   const endBanner = document.querySelector(".end-banner");
   const endMessage = document.querySelector(".end-message");
   const restartButton = document.querySelector(".restart-button");
+  const startScreen = document.querySelector(".start-screen");
+  const playButton = document.querySelector(".play-button");
+  const startScreenButton = document.querySelector(".start-screen-button");
+  const gameboard = document.querySelector(".gameboard");
 
   const updateDisplay = () => {
     const board = Gameboard.getBoard();
@@ -143,7 +151,7 @@ const DisplayController = (function () {
     }
   };
 
-  const displayEndBanner = () => {
+  const showEndBanner = () => {
     blurContainer.style.display = "block";
     endBanner.style.display = "flex";
   };
@@ -151,6 +159,14 @@ const DisplayController = (function () {
   const hideEndBanner = () => {
     blurContainer.style.display = "none";
     endBanner.style.display = "none";
+  };
+
+  const toggleStartScreen = () => {
+    startScreen.classList.toggle("hide");
+  };
+
+  const toggleGameboard = () => {
+    gameboard.classList.toggle("no-display");
   };
 
   const squares = document.querySelectorAll(".gameboard-square");
@@ -162,8 +178,9 @@ const DisplayController = (function () {
 
       if (
         !Gameboard.makeMove(Gameboard.getCurrentPlayer().getSymbol(), row, col)
-      )
+      ) {
         return;
+      }
 
       updateDisplay();
 
@@ -171,10 +188,10 @@ const DisplayController = (function () {
 
       if (winner) {
         endMessage.textContent = `${winner.getName()} won!`;
-        displayEndBanner();
+        showEndBanner();
       } else if (Gameboard.checkDraw()) {
         endMessage.textContent = `No one won`;
-        displayEndBanner();
+        showEndBanner();
       }
 
       Gameboard.switchTurn();
@@ -185,6 +202,19 @@ const DisplayController = (function () {
     Gameboard.resetBoard();
     updateDisplay();
     hideEndBanner();
+  });
+
+  playButton.addEventListener("click", () => {
+    toggleStartScreen();
+    toggleGameboard();
+  });
+
+  startScreenButton.addEventListener("click", () => {
+    Gameboard.resetBoard();
+    updateDisplay();
+    hideEndBanner();
+    toggleGameboard();
+    toggleStartScreen();
   });
 
   return { updateDisplay };

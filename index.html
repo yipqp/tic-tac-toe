@@ -15,7 +15,7 @@
     <title>tic-tac-toe</title>
   </head>
   <body>
-    <div class="gameboard">
+    <div class="gameboard no-display">
       <button
         class="gameboard-square square-1 right-line top-line"
         data-row="0"
@@ -65,7 +65,22 @@
     <div class="blur-container blur"></div>
     <div class="end-banner">
       <div class="end-message">zzz</div>
-      <button class="restart-button">Play again</button>
+      <div class="end-buttons">
+        <button class="start-screen-button">back to start</button>
+        <button class="restart-button">play again</button>
+      </div>
+    </div>
+    <div class="start-screen">
+      <h1>tic-tac-toe</h1>
+      <div class="slideshow-container">
+        <a class="left">&#129168;</a>
+        <a class="right">&#129170;</a>
+        <div class="slides">
+          <div class="slide easy">easy</div>
+          <div class="slide hard">hard</div>
+        </div>
+      </div>
+      <button class="play-button">play</button>
     </div>
   </body>
 </html>
