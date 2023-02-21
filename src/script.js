@@ -137,6 +137,11 @@ const DisplayController = (function () {
   const playButton = document.querySelector(".play-button");
   const startScreenButton = document.querySelector(".start-screen-button");
   const gameboard = document.querySelector(".gameboard");
+  const leftArrow = document.querySelector(".left");
+  const rightArrow = document.querySelector(".right");
+  const arrows = document.querySelectorAll(".arrow");
+  const slides = document.querySelectorAll(".slide");
+  let slideIndex = 1;
 
   const updateDisplay = () => {
     const board = Gameboard.getBoard();
@@ -217,5 +222,26 @@ const DisplayController = (function () {
     toggleStartScreen();
   });
 
-  return { updateDisplay };
+  leftArrow.addEventListener("click", () => {
+    slideIndex -= 1;
+    if (slideIndex < 1) slideIndex = 3;
+  });
+
+  rightArrow.addEventListener("click", () => {
+    slideIndex += 1;
+    if (slideIndex > 3) slideIndex = 1;
+  });
+
+  arrows.forEach((arrow) => {
+    arrow.addEventListener("click", () => {
+      const active = document.querySelector(".active");
+      active.classList.toggle("active");
+      const nextActive = document.querySelector(
+        `.slides div:nth-child(${slideIndex})`
+      );
+      nextActive.classList.toggle("active");
+    });
+  });
+
+  return { updateDisplay, slideIndex };
 })();
