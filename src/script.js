@@ -2,7 +2,36 @@ const Player = (symbol, name) => {
   const getSymbol = () => symbol;
   const getName = () => name;
 
-  return { getSymbol, getName };
+  const makeRandomMove = () => {
+    const availableMoves = Gameboard.getAvailableSquares();
+
+    if (availableMoves.length === 0) return false;
+
+    const randomSquare =
+      availableMoves[Math.floor(Math.random() * availableMoves.length)];
+
+    Gameboard.makeMove(symbol, randomSquare.r, randomSquare.c);
+  };
+
+  const makeBestMove = () => {
+    let bestMove = {};
+    let bestScore = -100;
+
+    const availableSquares = Gameboard.getAvailableSquares();
+
+    availableSquares.forEach((moveset) => {
+      Gameboard.makeMove(symbol, moveset.r, moveset.c);
+      let score = Gameboard.minimax(Gameboard.getBoard(), 0, false);
+      Gameboard.undoMove(moveset.r, moveset.c);
+      if (score > bestScore) {
+        bestScore = score;
+        bestMove = { r: moveset.r, c: moveset.c };
+      }
+    });
+    Gameboard.makeMove(symbol, bestMove.r, bestMove.c);
+  };
+
+  return { getSymbol, getName, makeRandomMove, makeBestMove };
 };
 
 const Gameboard = (function () {
@@ -110,12 +139,16 @@ const Gameboard = (function () {
   };
 
   const makeMove = (symbol, row, col) => {
-    if (board[row][col] !== 0) {
+    if (board[row][col] !== 0 || row === undefined || col === undefined) {
       return false;
     } else {
       board[row][col] = symbol;
       return true;
     }
+  };
+
+  const undoMove = (row, col) => {
+    board[row][col] = 0;
   };
 
   const getCurrentPlayer = () => currentPlayer;
@@ -140,11 +173,50 @@ const Gameboard = (function () {
     return arrayOfSquares;
   };
 
+  const minimax = (state, depth, isMaximizing) => {
+    let winner = getWinner();
+
+    if (winner === getPlayer1()) {
+      return -1;
+    } else if (winner === getPlayer2()) {
+      return 1;
+    } else if (checkDraw()) {
+      return 0;
+    }
+
+    if (isMaximizing) {
+      const availableSquares = getAvailableSquares();
+      let bestScore = -100;
+
+      availableSquares.forEach((moveset) => {
+        makeMove("o", moveset.r, moveset.c);
+        let score = minimax(getBoard(), depth + 1, false);
+        undoMove(moveset.r, moveset.c);
+        bestScore = Math.max(bestScore, score);
+      });
+
+      return bestScore;
+    } else {
+      const availableSquares = getAvailableSquares();
+      let bestScore = 100;
+
+      availableSquares.forEach((moveset) => {
+        makeMove("x", moveset.r, moveset.c);
+        let score = minimax(getBoard(), depth + 1, true);
+        undoMove(moveset.r, moveset.c);
+        bestScore = Math.min(bestScore, score);
+      });
+
+      return bestScore;
+    }
+  };
+
   return {
     getBoard,
     getWinner,
     checkDraw,
     makeMove,
+    undoMove,
     getCurrentPlayer,
     switchTurn,
     getPlayer1,
@@ -153,6 +225,7 @@ const Gameboard = (function () {
     setDifficulty,
     getDifficulty,
     getAvailableSquares,
+    minimax,
   };
 })();
 
@@ -206,19 +279,13 @@ const DisplayController = (function () {
     gameboard.classList.toggle("no-display");
   };
 
-  const makeRandomMove = () => {
-    const availableMoves = Gameboard.getAvailableSquares();
-
-    if (availableMoves.length === 0) return false;
-
-    const randomSquare =
-      availableMoves[Math.floor(Math.random() * availableMoves.length)];
-
-    Gameboard.makeMove(
-      Gameboard.getCurrentPlayer().getSymbol(),
-      randomSquare.r,
-      randomSquare.c
-    );
+  const displayEnding = () => {
+    const winner = Gameboard.getWinner();
+    if (!winner && !Gameboard.checkDraw()) return false;
+    let message = winner ? `${winner.getName()} won!` : `No one won`;
+    endMessage.textContent = message;
+    showEndBanner();
+    return true;
   };
 
   const gameEvent = (e) => {
@@ -228,7 +295,7 @@ const DisplayController = (function () {
 
     // play self
     if (Gameboard.getDifficulty() === "player") {
-      // do not click on filled square
+      // don't switch turn if filled square is clicked
       if (
         !Gameboard.makeMove(Gameboard.getCurrentPlayer().getSymbol(), row, col)
       ) {
@@ -245,31 +312,28 @@ const DisplayController = (function () {
       ) {
         return;
       } else {
+        // do not allow computer move if player made winning move
+        if (displayEnding()) {
+          updateDisplay();
+          return;
+        }
         Gameboard.switchTurn();
       }
-
+      // AI turn
       if (Gameboard.getCurrentPlayer() === Gameboard.getPlayer2()) {
         // easy: make random move
         if (Gameboard.getDifficulty() === "easy") {
-          makeRandomMove();
+          Gameboard.getPlayer2().makeRandomMove();
         }
         // hard: use minmax algorithm
         if (Gameboard.getDifficulty() === "hard") {
+          Gameboard.getPlayer2().makeBestMove();
         }
       }
     }
 
     updateDisplay();
-
-    const winner = Gameboard.getWinner();
-
-    if (winner) {
-      endMessage.textContent = `${winner.getName()} won!`;
-      showEndBanner();
-    } else if (Gameboard.checkDraw()) {
-      endMessage.textContent = `No one won`;
-      showEndBanner();
-    }
+    displayEnding();
 
     Gameboard.switchTurn();
   };
