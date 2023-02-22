@@ -1,6 +1,7 @@
 const Player = (symbol, name) => {
   const getSymbol = () => symbol;
   const getName = () => name;
+
   return { getSymbol, getName };
 };
 
@@ -9,15 +10,23 @@ const Gameboard = (function () {
   const player1 = Player("x", "Player 1");
   const player2 = Player("o", "Player 2");
   let currentPlayer = player1;
+  let difficulty;
+
+  const setDifficulty = (newDifficulty) => {
+    difficulty = newDifficulty;
+  };
+
+  const getDifficulty = () => difficulty;
 
   const resetBoard = () => {
-    for (let row = 0; row < 3; row++) {
-      board[row] = [];
-      for (let col = 0; col < 3; col++) {
-        board[row][col] = 0;
+    for (let r = 0; r < 3; r++) {
+      board[r] = [];
+      for (let c = 0; c < 3; c++) {
+        board[r][c] = 0;
       }
     }
   };
+
   resetBoard();
 
   const getBoard = () => board;
@@ -34,14 +43,14 @@ const Gameboard = (function () {
     return winner;
   };
 
-  const checkWin = () => {
+  const getWinner = () => {
     // row win
-    for (let row = 0; row < 3; row++) {
-      const winningSymbol = board[row][0];
+    for (let r = 0; r < 3; r++) {
+      const winningSymbol = board[r][0];
       let tempSymbol = winningSymbol;
-      for (let col = 1; col < 3; col++) {
-        if (board[row][col] !== winningSymbol) {
-          tempSymbol = board[row][col];
+      for (let c = 1; c < 3; c++) {
+        if (board[r][c] !== winningSymbol) {
+          tempSymbol = board[r][c];
           break;
         }
       }
@@ -50,12 +59,12 @@ const Gameboard = (function () {
     }
 
     // col win
-    for (let col = 0; col < 3; col++) {
-      const winningSymbol = board[0][col];
+    for (let c = 0; c < 3; c++) {
+      const winningSymbol = board[0][c];
       let tempSymbol = winningSymbol;
-      for (let row = 1; row < 3; row++) {
-        if (board[row][col] !== winningSymbol) {
-          tempSymbol = board[row][col];
+      for (let r = 1; r < 3; r++) {
+        if (board[r][c] !== winningSymbol) {
+          tempSymbol = board[r][c];
           break;
         }
       }
@@ -101,9 +110,12 @@ const Gameboard = (function () {
   };
 
   const makeMove = (symbol, row, col) => {
-    if (board[row][col] !== 0) return false;
-    board[row][col] = symbol;
-    return true;
+    if (board[row][col] !== 0) {
+      return false;
+    } else {
+      board[row][col] = symbol;
+      return true;
+    }
   };
 
   const getCurrentPlayer = () => currentPlayer;
@@ -113,11 +125,24 @@ const Gameboard = (function () {
   };
 
   const getPlayer1 = () => player1;
+
   const getPlayer2 = () => player2;
+
+  const getAvailableSquares = () => {
+    const arrayOfSquares = [];
+    for (let r = 0; r < 3; r++) {
+      for (let c = 0; c < 3; c++) {
+        if (board[r][c] === 0) {
+          arrayOfSquares.push({ r, c });
+        }
+      }
+    }
+    return arrayOfSquares;
+  };
 
   return {
     getBoard,
-    checkWin,
+    getWinner,
     checkDraw,
     makeMove,
     getCurrentPlayer,
@@ -125,6 +150,9 @@ const Gameboard = (function () {
     getPlayer1,
     getPlayer2,
     resetBoard,
+    setDifficulty,
+    getDifficulty,
+    getAvailableSquares,
   };
 })();
 
@@ -140,17 +168,21 @@ const DisplayController = (function () {
   const leftArrow = document.querySelector(".left");
   const rightArrow = document.querySelector(".right");
   const arrows = document.querySelectorAll(".arrow");
-  const slides = document.querySelectorAll(".slide");
+
+  let difficulty = "easy";
+  Gameboard.setDifficulty(difficulty);
+
   let slideIndex = 1;
 
   const updateDisplay = () => {
     const board = Gameboard.getBoard();
+
     for (let r = 0; r < board.length; r++) {
       for (let c = 0; c < board[r].length; c++) {
         const boardSquare = document.querySelector(
           `[data-row="${r}"][data-col="${c}"]`
         );
-
+        // if inner board array element is 0, just use an empty space in the DOM
         boardSquare.textContent = board[r][c] !== 0 ? board[r][c] : " ";
       }
     }
@@ -174,33 +206,78 @@ const DisplayController = (function () {
     gameboard.classList.toggle("no-display");
   };
 
-  const squares = document.querySelectorAll(".gameboard-square");
-  squares.forEach((square) => {
-    square.addEventListener("click", (e) => {
-      const {
-        dataset: { row, col },
-      } = e.target;
+  const makeRandomMove = () => {
+    const availableMoves = Gameboard.getAvailableSquares();
 
+    if (availableMoves.length === 0) return false;
+
+    const randomSquare =
+      availableMoves[Math.floor(Math.random() * availableMoves.length)];
+
+    Gameboard.makeMove(
+      Gameboard.getCurrentPlayer().getSymbol(),
+      randomSquare.r,
+      randomSquare.c
+    );
+  };
+
+  const gameEvent = (e) => {
+    const {
+      dataset: { row, col },
+    } = e.target;
+
+    // play self
+    if (Gameboard.getDifficulty() === "player") {
+      // do not click on filled square
       if (
         !Gameboard.makeMove(Gameboard.getCurrentPlayer().getSymbol(), row, col)
       ) {
         return;
       }
+    }
 
-      updateDisplay();
-
-      const winner = Gameboard.checkWin();
-
-      if (winner) {
-        endMessage.textContent = `${winner.getName()} won!`;
-        showEndBanner();
-      } else if (Gameboard.checkDraw()) {
-        endMessage.textContent = `No one won`;
-        showEndBanner();
+    // play AI
+    if (Gameboard.getDifficulty() !== "player") {
+      // do not click if not user's turn
+      if (
+        Gameboard.getCurrentPlayer() !== Gameboard.getPlayer1() ||
+        !Gameboard.makeMove(Gameboard.getCurrentPlayer().getSymbol(), row, col)
+      ) {
+        return;
+      } else {
+        Gameboard.switchTurn();
       }
 
-      Gameboard.switchTurn();
-    });
+      if (Gameboard.getCurrentPlayer() === Gameboard.getPlayer2()) {
+        // easy: make random move
+        if (Gameboard.getDifficulty() === "easy") {
+          makeRandomMove();
+        }
+        // hard: use minmax algorithm
+        if (Gameboard.getDifficulty() === "hard") {
+        }
+      }
+    }
+
+    updateDisplay();
+
+    const winner = Gameboard.getWinner();
+
+    if (winner) {
+      endMessage.textContent = `${winner.getName()} won!`;
+      showEndBanner();
+    } else if (Gameboard.checkDraw()) {
+      endMessage.textContent = `No one won`;
+      showEndBanner();
+    }
+
+    Gameboard.switchTurn();
+  };
+
+  const squares = document.querySelectorAll(".gameboard-square");
+
+  squares.forEach((square) => {
+    square.addEventListener("click", gameEvent);
   });
 
   restartButton.addEventListener("click", () => {
@@ -236,12 +313,16 @@ const DisplayController = (function () {
     arrow.addEventListener("click", () => {
       const active = document.querySelector(".active");
       active.classList.toggle("active");
+
       const nextActive = document.querySelector(
         `.slides div:nth-child(${slideIndex})`
       );
       nextActive.classList.toggle("active");
+
+      difficulty = nextActive.dataset.difficulty;
+      Gameboard.setDifficulty(difficulty);
     });
   });
 
-  return { updateDisplay, slideIndex };
+  return { updateDisplay };
 })();
