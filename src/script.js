@@ -153,6 +153,10 @@ const Gameboard = (function () {
 
   const getCurrentPlayer = () => currentPlayer;
 
+  const setCurrentPlayer = (newPlayer) => {
+    currentPlayer = newPlayer;
+  };
+
   const switchTurn = () => {
     currentPlayer = currentPlayer === player1 ? player2 : player1;
   };
@@ -218,6 +222,7 @@ const Gameboard = (function () {
     makeMove,
     undoMove,
     getCurrentPlayer,
+    setCurrentPlayer,
     switchTurn,
     getPlayer1,
     getPlayer2,
@@ -351,6 +356,7 @@ const DisplayController = (function () {
   });
 
   playButton.addEventListener("click", () => {
+    Gameboard.setCurrentPlayer(Gameboard.getPlayer1());
     toggleStartScreen();
     toggleGameboard();
   });
