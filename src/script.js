@@ -21,7 +21,7 @@ const Player = (symbol, name) => {
 
     availableSquares.forEach((moveset) => {
       Gameboard.makeMove(symbol, moveset.r, moveset.c);
-      let score = Gameboard.minimax(Gameboard.getBoard(), 0, false);
+      let score = Gameboard.minimax(0, false);
       Gameboard.undoMove(moveset.r, moveset.c);
       if (score > bestScore) {
         bestScore = score;
@@ -173,13 +173,13 @@ const Gameboard = (function () {
     return arrayOfSquares;
   };
 
-  const minimax = (state, depth, isMaximizing) => {
+  const minimax = (depth, isMaximizing) => {
     let winner = getWinner();
 
     if (winner === getPlayer1()) {
-      return -1;
+      return -100 + depth;
     } else if (winner === getPlayer2()) {
-      return 1;
+      return 100 - depth;
     } else if (checkDraw()) {
       return 0;
     }
@@ -190,7 +190,7 @@ const Gameboard = (function () {
 
       availableSquares.forEach((moveset) => {
         makeMove("o", moveset.r, moveset.c);
-        let score = minimax(getBoard(), depth + 1, false);
+        let score = minimax(depth + 1, false);
         undoMove(moveset.r, moveset.c);
         bestScore = Math.max(bestScore, score);
       });
@@ -202,7 +202,7 @@ const Gameboard = (function () {
 
       availableSquares.forEach((moveset) => {
         makeMove("x", moveset.r, moveset.c);
-        let score = minimax(getBoard(), depth + 1, true);
+        let score = minimax(depth + 1, true);
         undoMove(moveset.r, moveset.c);
         bestScore = Math.min(bestScore, score);
       });
